@@ -168,14 +168,29 @@
 
   /* ========================================================================================== */
 
+  class CDSLocaleProvider {
+    constructor(weekdays, monthNames, firstDayOfWeek, translations) {
+      this.weekdays = weekdays;
+      this.monthNames = monthNames;
+      this.firstDayOfWeek = firstDayOfWeek;
+      this.translations = translations;
+    }
+
+    getMonthName(m) {
+      return this.monthNames[m];
+    }
+
+    translate(word) {
+      return this.translations[word];
+    }
+  }
 
   class CDSDate extends Date {
     static #ONE_DAY = 24 * 60 * 60 * 1000;
-    static #WEEKDAYS = "S M T W T F S".split(' ');
-    static #MONTHS = "January February March April May June July August September October November December".split(' ');
 
-    constructor(...args) {
+    constructor(locale, ...args) {
       super(...args);
+      this.locale = locale;
     }
 
     static padded2(n) {
@@ -190,16 +205,8 @@
       return new CDSDate(string);
     }
 
-    static getMonthName(m) {
-      return CDSDate.#MONTHS[m];
-    }
-
-    static getFirstDayOfWeek() {
-      return 0;
-    }
-
-    static getWeekDays() {
-      return CDSDate.#WEEKDAYS;
+    getCurrentMonthName() {
+      return this.locale.getMonthName(this.getMonth());
     }
 
     getPaddedMinutes() {
@@ -216,7 +223,8 @@
     }
 
     stripTime() {
-      return new CDSDate(this.getFullYear(), this.getMonth(), this.getDate());
+      this.setHours(0, 0, 0, 0);
+      return this;
     };
 
     daysDistance(compare_date) {
@@ -224,7 +232,7 @@
     };
 
     toFormattedString(include_time) {
-      let str = CDSDate.getMonthName(this.getMonth()) + " " + this.getDate() + ", " + this.getFullYear();
+      let str = this.getCurrentMonthName() + " " + this.getDate() + ", " + this.getFullYear();
       if (include_time) {
         str += " " + this.getAMPMHour() + ":" + this.getPaddedMinutes() + " " + this.getAMPM()
       }
@@ -271,10 +279,22 @@
   class CalendarDateSelect {
 
     static DATE_CLASS = CDSDate;
+    static LOCALE_PROVIDER = new CDSLocaleProvider(
+      "S M T W T F S".split(' '),
+      "January February March April May June July August September October November December".split(' '),
+      0,
+      {
+        OK: "OK",
+        Now: "Now",
+        Today: "Today",
+        Clear: "Clear"
+      }
+    );
 
     constructor(target_element, options) {
-      this.target_element = target_element;
+      this.locale = CalendarDateSelect.LOCALE_PROVIDER;
 
+      this.target_element = target_element;
       if (!this.target_element) {
         console.error("Target element " + target_element + " not found!");
         return false;
@@ -296,13 +316,7 @@
         popup_by: this.target_element,
         month_year: "dropdowns",
         onchange: this.target_element.onchange,
-        valid_date_check: null,
-        translations: {
-          "OK": "OK",
-          "Now": "Now",
-          "Today": "Today",
-          "Clear": "Clear"
-        }
+        valid_date_check: null
       }, options || {});
       this.use_time = this.options.get("time");
       this.parseDate();
@@ -322,7 +336,7 @@
     }
 
     newDate(...args) {
-      return new CalendarDateSelect.DATE_CLASS(...args);
+      return new CalendarDateSelect.DATE_CLASS(this.locale, ...args);
     }
 
     positionCalendarDiv() {
@@ -404,7 +418,7 @@
       });
 
       if (this.options.get("month_year") === "dropdowns") {
-        this.month_select = new SelectBox(header_div, range(0, 11).map(m => [CalendarDateSelect.DATE_CLASS.getMonthName(m), m]), {
+        this.month_select = new SelectBox(header_div, range(0, 11).map(m => [this.locale.getMonthName(m), m]), {
           className: "month",
           onchange: () => this.navMonth(this.month_select.getValue())
         });
@@ -423,14 +437,14 @@
       this.calendar_day_grid = [];
       let days_table = createElement(body_div, "table", {cellPadding: "0px", cellSpacing: "0px", width: "100%"});
       let weekdays_row = createElement(createElement(days_table, "thead"), "tr");
-      CalendarDateSelect.DATE_CLASS.getWeekDays().forEach(weekday => createElement(weekdays_row, "th", {innerHTML: weekday}));
+      this.locale.weekdays.forEach(weekday => createElement(weekdays_row, "th", {innerHTML: weekday}));
 
       let days_tbody = createElement(days_table, "tbody")
       // Make the days!
       let row_number = 0, weekday;
       let days_row;
       for (let cell_index = 0; cell_index < 42; cell_index++) {
-        weekday = (cell_index + CalendarDateSelect.DATE_CLASS.getFirstDayOfWeek()) % 7;
+        weekday = (cell_index + this.locale.firstDayOfWeek) % 7;
         if (cell_index % 7 === 0) {
           days_row = createElement(days_tbody, "tr", {className: 'row_' + row_number++});
         }
@@ -497,7 +511,7 @@
         createElement(buttons_div, "span", {innerHTML: "&#160;"});
         if (this.options.get("time") === "mixed" || !this.options.get("time")) {
           createElement(buttons_div, "a", {
-            innerHTML: this.options.get('translations')["Today"],
+            innerHTML: this.locale.translate("Today"),
             href: "#",
             onclick: () => {
               this.today(false);
@@ -513,7 +527,7 @@
 
         if (this.options.get("time")) {
           createElement(buttons_div, "a", {
-            innerHTML: this.options.get('translations')["Now"],
+            innerHTML: this.locale.translate("Now"),
             href: "#",
             onclick: () => {
               this.today(true);
@@ -528,7 +542,7 @@
             className: "button_seperator"
           });
           createElement(buttons_div, "a", {
-            innerHTML: this.options.get('translations')["OK"],
+            innerHTML: this.locale.translate("OK"),
             href: "#",
             onclick: () => {
               this.close();
@@ -542,7 +556,7 @@
             className: "button_seperator"
           });
           createElement(buttons_div, "a", {
-            innerHTML: this.options.get('translations')["Clear"],
+            innerHTML: this.locale.translate("Clear"),
             href: "#",
             onclick: () => {
               this.clearDate();
@@ -568,7 +582,7 @@
       this.beginning_date.setHours(12); // Prevent daylight savings time boundaries from showing a duplicate day
       let pre_days = this.beginning_date.getDay() // draw some days before the fact
       if (pre_days < 3) pre_days += 7;
-      this.beginning_date.setDate(1 - pre_days + CalendarDateSelect.DATE_CLASS.getFirstDayOfWeek());
+      this.beginning_date.setDate(1 - pre_days + this.locale.firstDayOfWeek);
 
       let iterator = this.newDate(this.beginning_date);
 
@@ -607,11 +621,10 @@
     }
 
     refreshMonthYear() {
-      let m = this.date.getMonth();
-      let y = this.date.getFullYear();
+      const y = this.date.getFullYear();
       // set the month
       if (this.options.get("month_year") === "dropdowns") {
-        this.month_select.setValue(m, false);
+        this.month_select.setValue(this.date.getMonth(), false);
 
         let e = this.year_select.element;
         if (this.flexibleYearRange() && (!(this.year_select.setValue(y, false)) || e.selectedIndex <= 1 || e.selectedIndex >= e.options.length - 2)) this.populateYearRange();
@@ -619,7 +632,7 @@
         this.year_select.setValue(y);
 
       } else {
-        this.month_year_label.innerHTML = CalendarDateSelect.DATE_CLASS.getMonthName(m) + " " + y.toString();
+        this.month_year_label.innerHTML = this.date.getCurrentMonthName() + " " + y.toString();
       }
     }
 
@@ -843,5 +856,6 @@
   }
 
   window.CDSDate = CDSDate;
+  window.CDSLocaleProvider = CDSLocaleProvider;
   window.CalendarDateSelect = CalendarDateSelect;
 })();
