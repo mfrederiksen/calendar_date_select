@@ -1,6 +1,6 @@
 {
   "name": "calendar_date_select",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Calendar date picker for rails",
   "main": "index.js",
   "directories": {
