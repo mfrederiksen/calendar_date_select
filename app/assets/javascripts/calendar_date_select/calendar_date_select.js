@@ -337,6 +337,14 @@
     clone() {
       return new this.constructor(this);
     }
+
+    /**
+     * Returns the current hour formatted for a dropdown
+     * @return {string}
+     */
+    getHourForDropdown() {
+      return this.getAMPMHour()+ " " + this.getAMPM();
+    }
   }
 
   class SelectBox {
@@ -591,7 +599,7 @@
           blank_time.concat(
             range(0, 23).map(x => {
               t.setHours(x);
-              return [t.getAMPMHour() + " " + t.getAMPM(), x]
+              return [t.getHourForDropdown(), x]
             })
           ),
           {
