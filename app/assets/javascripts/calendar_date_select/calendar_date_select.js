@@ -1,4 +1,4 @@
-(function() {
+(function(exportTo) {
   /**
    * Creates an element with given options and style, appending it to the parent.
    * @param {Element} parent Parent element
@@ -17,6 +17,26 @@
     }
     parent.append(newElement);
     return newElement;
+  }
+
+  /**
+   *
+   * @param {Element} element
+   * @param {string} tagName
+   * @return {Element}
+   */
+  function findFirstChildElementByTagName(element, tagName) {
+    if (element.tagName === tagName) {
+      return element;
+    }
+    let foundNode = null;
+    if (element.hasChildNodes()) {
+      for (let child of element.children) {
+        foundNode = findFirstChildElementByTagName(child, tagName);
+        if (foundNode) break;
+      }
+    }
+    return foundNode;
   }
 
   /**
@@ -41,7 +61,7 @@
   function objectsToMap(...objs) {
     return objs.reduce((previous, current) => {
       const second = current instanceof Map ? current : Object.entries(current);
-      return new Map([...previous, ...second])
+      return new Map([...previous, ...second]);
     }, new Map());
   }
 
@@ -58,7 +78,9 @@
    * @param {Element} element Target element
    */
   function removeChildNodes(element) {
-    element.childNodes.forEach(removeNode);
+    while (element.firstChild) {
+      element.removeChild(element.firstChild);
+    }
   }
 
   /**
@@ -168,7 +190,23 @@
 
   /* ========================================================================================== */
 
+  /**
+   * Holds data required for internationalization.
+   */
   class CDSLocaleProvider {
+    /**
+     * @typedef Translations
+     * @property {string} Ok
+     * @property {string} Now
+     * @property {string} Today
+     * @property {string} Clear
+     */
+    /**
+     * @param {string[]} weekdays Array containing exactly 7 strings representing short-form days of the week starting with Sunday
+     * @param {string[]} monthNames Array containing exactly 12 strings representing Months of the year
+     * @param {number} firstDayOfWeek Number representing the 0-based index for the first day of the week
+     * @param {Translations} translations Object of English keys to translated names
+     */
     constructor(weekdays, monthNames, firstDayOfWeek, translations) {
       this.weekdays = weekdays;
       this.monthNames = monthNames;
@@ -176,67 +214,128 @@
       this.translations = translations;
     }
 
+    /**
+     * Returns the translated month name by index
+     * @param {number} m 0-based month index
+     * @returns {string}
+     */
     getMonthName(m) {
       return this.monthNames[m];
     }
 
-    translate(word) {
-      return this.translations[word];
+    /**
+     * Returns the translated key
+     * @param {string} key Key to translate
+     * @returns {string}
+     */
+    translate(key) {
+      return this.translations[key];
     }
   }
 
+  /**
+   * Date handling functions for CDS
+   */
   class CDSDate extends Date {
     static #ONE_DAY = 24 * 60 * 60 * 1000;
 
-    constructor(locale, ...args) {
+    /**
+     * @param {any} args passed to Date constructor
+     */
+    constructor(...args) {
       super(...args);
-      this.locale = locale;
     }
 
+    /**
+     * Left-pads a number < 10 with leading 0
+     * @param {number|string} n
+     * @returns {string}
+     */
     static padded2(n) {
-      let padded2 = parseInt(n, 10);
-      if (n < 10) {
-        padded2 = "0" + padded2;
-      }
-      return padded2;
+      const nInt = parseInt(n, 10);
+      return (nInt < 10) ? "0" + nInt : "" + nInt;
     }
 
+    /**
+     * Parses a date string returning a new instance of CDSDate
+     * @param {string} string Date string
+     * @returns {CDSDate}
+     */
     static parseFormattedString(string) {
       return new CDSDate(string);
     }
 
+    /**
+     * Gets the localized name for the current month
+     * @returns {string} Date string
+     */
     getCurrentMonthName() {
-      return this.locale.getMonthName(this.getMonth());
+      return CalendarDateSelect.LOCALE_PROVIDER.getMonthName(this.getMonth());
     }
 
+    /**
+     * Gets the current minutes, left padded
+     * @returns {string}
+     */
     getPaddedMinutes() {
       return CDSDate.padded2(this.getMinutes());
     }
 
+    /**
+     * Returns the current hour in 12-hour format (1 - 12)
+     * @returns {number}
+     */
     getAMPMHour() {
       const hour = this.getHours();
       return (hour === 0) ? 12 : (hour > 12 ? hour - 12 : hour)
     }
 
+    /**
+     * Returns AM or PM based on the current time
+     * @returns {string}
+     */
     getAMPM() {
       return (this.getHours() < 12) ? "AM" : "PM";
     }
 
+    /**
+     * Clones the current instance and sets the current time to the beginning of the day
+     * @returns {CDSDate} A new date instance
+     */
     stripTime() {
-      this.setHours(0, 0, 0, 0);
-      return this;
-    };
+      const d = this.clone();
+      d.setHours(0, 0, 0, 0);
+      return d;
+    }
 
+    /**
+     * Returns the number of days between 2 dates
+     * @param {Date} compare_date
+     * @returns {number}
+     */
     daysDistance(compare_date) {
       return Math.round((compare_date - this) / CDSDate.#ONE_DAY);
-    };
+    }
 
+    /**
+     * Formats the date to a string
+     * @param {boolean} include_time When true, includes the time component
+     * @returns {string}
+     */
     toFormattedString(include_time) {
       let str = this.getCurrentMonthName() + " " + this.getDate() + ", " + this.getFullYear();
       if (include_time) {
         str += " " + this.getAMPMHour() + ":" + this.getPaddedMinutes() + " " + this.getAMPM()
       }
       return str;
+    }
+
+    /**
+     * Clones the current instance
+     * @return {CDSDate}
+     */
+    clone() {
+      return new this.constructor(this);
     }
   }
 
@@ -299,7 +398,7 @@
         console.error("Target element " + target_element + " not found!");
         return false;
       }
-      if (this.target_element.tagName !== "INPUT") this.target_element = this.target_element.down("INPUT")
+      if (this.target_element.tagName !== "INPUT") this.target_element = findFirstChildElementByTagName(this.target_element,"INPUT");
 
       this.target_element.calendar_date_select = this;
       this.last_click_at = 0;
@@ -315,7 +414,19 @@
         minute_interval: 5,
         popup_by: this.target_element,
         month_year: "dropdowns",
-        onchange: this.target_element.onchange,
+        onchange: (target_element => {
+          return () => {
+            if(target_element.dispatchEvent) {
+              const event = document.createEvent('HTMLEvents');
+              event.initEvent('change', true, true);
+              target_element.dispatchEvent(event);
+            } else {
+              const event = document.createEventObject();
+              event.type='onChange';
+              target_element.fireEvent('onChange', event);
+            }
+          };
+        })(this.target_element),
         valid_date_check: null
       }, options || {});
       this.use_time = this.options.get("time");
@@ -336,7 +447,7 @@
     }
 
     newDate(...args) {
-      return new CalendarDateSelect.DATE_CLASS(this.locale, ...args);
+      return new CalendarDateSelect.DATE_CLASS(...args);
     }
 
     positionCalendarDiv() {
@@ -491,11 +602,10 @@
           }
         );
         createElement(buttons_div, "span", {innerHTML: ":", className: "seperator"});
-        let that = this;
         this.minute_select = new SelectBox(
           buttons_div,
           blank_time.concat(
-            range(0, 59).filter(x => (x % that.options.get('minute_interval')) === 0).map(x => [CalendarDateSelect.DATE_CLASS.padded2(x), x])
+            range(0, 59).filter(x => (x % this.options.get('minute_interval')) === 0).map(x => [CalendarDateSelect.DATE_CLASS.padded2(x), x])
           ),
           {
             onchange: (e) => {
@@ -505,7 +615,9 @@
           }
         );
 
-      } else if (!this.options.get("buttons")) buttons_div.remove();
+      } else if (!this.options.get("buttons")) {
+        buttons_div.remove();
+      }
 
       if (this.options.get("buttons")) {
         createElement(buttons_div, "span", {innerHTML: "&#160;"});
@@ -520,10 +632,12 @@
           });
         }
 
-        if (this.options.get("time") === "mixed") createElement(buttons_div, "span", {
-          innerHTML: "&#160;|&#160;",
-          className: "button_seperator"
-        })
+        if (this.options.get("time") === "mixed") {
+          createElement(buttons_div, "span", {
+            innerHTML: "&#160;|&#160;",
+            className: "button_seperator"
+          });
+        }
 
         if (this.options.get("time")) {
           createElement(buttons_div, "a", {
@@ -584,17 +698,17 @@
       if (pre_days < 3) pre_days += 7;
       this.beginning_date.setDate(1 - pre_days + this.locale.firstDayOfWeek);
 
-      let iterator = this.newDate(this.beginning_date);
+      const iterator = this.newDate(this.beginning_date);
 
-      let today = this.newDate().stripTime();
-      let this_month = this.date.getMonth();
-      let vdc = this.options.get("valid_date_check");
+      const today = this.newDate().stripTime();
+      const this_month = this.date.getMonth();
+      const vdc = this.options.get("valid_date_check");
       for (let cell_index = 0; cell_index < 42; cell_index++) {
-        let day = iterator.getDate();
-        let month = iterator.getMonth();
-        let cell = this.calendar_day_grid[cell_index];
+        const day = iterator.getDate();
+        const month = iterator.getMonth();
+        const cell = this.calendar_day_grid[cell_index];
         removeNode(cell.childNodes[0]);
-        let div = createElement(cell, "div", {innerHTML: day});
+        const div = createElement(cell, "div", {innerHTML: day});
         if (month !== this_month) div.className = "other";
         cell.day = day;
         cell.month = month;
@@ -644,12 +758,12 @@
       if (!this.flexibleYearRange())
         return range(this.options.get("year_range")[0], this.options.get("year_range")[1]);
 
-      let y = this.date.getFullYear();
+      const y = this.date.getFullYear();
       return range(y - this.options.get("year_range"), y + this.options.get("year_range"));
     }
 
     flexibleYearRange() {
-      return (typeof (this.options.get("year_range")) == "number");
+      return (typeof this.options.get("year_range") === "number");
     }
 
     validYear(year) {
@@ -661,7 +775,7 @@
     }
 
     dayHover(element) {
-      let hover_date = this.newDate(this.selected_date);
+      const hover_date = this.newDate(this.selected_date);
       hover_date.setYear(element.year);
       hover_date.setMonth(element.month);
       hover_date.setDate(element.day);
@@ -698,14 +812,21 @@
     }
 
     parseDate() {
-      let value = this.target_element.value.trim();
-      this.selection_made = (value !== "");
+      const value = this.target_element.value.trim();
+      const default_time = this.options.get("default_time");
+      this.selection_made = value !== "" ? true : typeof default_time !== 'undefined';
       this.date = value === "" ? NaN : CalendarDateSelect.DATE_CLASS.parseFormattedString(this.options.get("date") || value);
-      if (isNaN(this.date)) this.date = this.newDate();
+      if (isNaN(this.date) && !default_time) {
+        this.date = this.newDate();
+      } else if (isNaN(this.date) && default_time) {
+        this.date = (Object.prototype.toString.apply(default_time) === '[object Function]') ? default_time() : default_time;
+      }
       const range = this.yearRange();
       const rangeStart = range[0];
       const rangeEnd = range[range.length - 1];
-      if (!this.validYear(this.date.getFullYear())) this.date.setYear((this.date.getFullYear() < rangeStart) ? rangeStart : rangeEnd);
+      if (!this.validYear(this.date.getFullYear())) {
+        this.date.setYear((this.date.getFullYear() < rangeStart) ? rangeStart : rangeEnd);
+      }
       this.selected_date = this.newDate(this.date);
       this.use_time = /[0-9]:[0-9]{2}/.exec(value) ? true : false;
       this.date.setDate(1);
@@ -719,38 +840,48 @@
 
     clearDate() {
       if ((this.target_element.disabled || this.target_element.readOnly) && this.options.get("popup") !== "force") return false;
+      const last_value = this.target_element.value;
       this.target_element.value = "";
       this.clearSelectedClass();
       this.updateFooter('&#160;');
+      if (last_value !== this.target_element.value) {
+        this.callback("onchange");
+      }
     }
 
     updateSelectedDate(partsOrElement, via_click) {
-      let parts = objectsToMap(partsOrElement);
+      const parts = objectsToMap(partsOrElement);
       if ((this.target_element.disabled || this.target_element.readOnly) && this.options.get("popup") !== "force") return false;
       if (parts.get("day")) {
-        let t_selected_date = this.selected_date, vdc = this.options.get("valid_date_check");
-        for (let x = 0; x <= 3; x++) t_selected_date.setDate(parts.get("day"));
-        t_selected_date.setYear(parts.get("year"));
-        t_selected_date.setMonth(parts.get("month"));
+        const t_selected_date = this.selected_date;
+        const vdc = this.options.get("valid_date_check");
+        t_selected_date.setFullYear(parts.get("year"), parts.get("month"), parts.get("day"));
 
-        if (vdc && !vdc(t_selected_date.stripTime())) {
+        if (vdc && ! vdc(t_selected_date.stripTime())) {
           return false;
         }
         this.selected_date = t_selected_date;
         this.selection_made = true;
       }
 
-      if (!isNaN(parts.get("hour"))) this.selected_date.setHours(parts.get("hour"));
-      if (!isNaN(parts.get("minute"))) this.selected_date.setMinutes(floor_to_interval(parts.get("minute"), this.options.get("minute_interval")));
-      if (parts.get("hour") === "" || parts.get("minute") === "")
+      if (!isNaN(parts.get("hour"))) {
+        this.selected_date.setHours(parts.get("hour"));
+      }
+      if (!isNaN(parts.get("minute"))) {
+        this.selected_date.setMinutes(floor_to_interval(parts.get("minute"), this.options.get("minute_interval")));
+      }
+      if (parts.get("hour") === "" || parts.get("minute") === "") {
         this.setUseTime(false);
-      else if (!isNaN(parts.get("hour")) || !isNaN(parts.get("minute")))
+      } else if (!isNaN(parts.get("hour")) || !isNaN(parts.get("minute"))) {
         this.setUseTime(true);
+      }
 
       this.updateFooter();
       this.setSelectedClass();
 
-      if (this.selection_made) this.updateValue();
+      if (this.selection_made) {
+        this.updateValue();
+      }
       if (this.closeOnClick()) {
         this.close();
       }
@@ -769,15 +900,15 @@
     }
 
     navMonth(month) {
-      let target_date;
-      (target_date = this.newDate(this.date)).setMonth(month);
-      return (this.navTo(target_date));
+      const target_date = this.newDate(this.date);
+      target_date.setMonth(month);
+      return this.navTo(target_date);
     }
 
     navYear(year) {
-      let target_date;
-      (target_date = this.newDate(this.date)).setYear(year);
-      return (this.navTo(target_date));
+      const target_date = this.newDate(this.date);
+      target_date.setFullYear(year);
+      return this.navTo(target_date);
     }
 
     navTo(date) {
@@ -810,9 +941,9 @@
     }
 
     today(now) {
-      let d = this.newDate();
+      const d = this.newDate();
       this.date = this.newDate();
-      let o = objectsToMap({
+      const o = objectsToMap({
         day: d.getDate(),
         month: d.getMonth(),
         year: d.getFullYear(),
@@ -855,7 +986,12 @@
     }
   }
 
-  window.CDSDate = CDSDate;
-  window.CDSLocaleProvider = CDSLocaleProvider;
-  window.CalendarDateSelect = CalendarDateSelect;
-})();
+  // Expose for unit tests
+  exportTo.CDSUtils = { objectsToMap, createElement, range, removeChildNodes, isDescendantOf, getDimensions, windowHeight, floor_to_interval, findFirstChildElementByTagName };
+
+  exportTo.CDSDate = CDSDate;
+  exportTo.CDSLocaleProvider = CDSLocaleProvider;
+  exportTo.CalendarDateSelect = CalendarDateSelect;
+
+  // Exports to window when in the browser or module.exports for Jest tests
+})(typeof window !== 'undefined' ? window : module.exports);
