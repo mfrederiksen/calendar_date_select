@@ -165,7 +165,7 @@ module CalendarDateSelect::FormHelpers
       options, javascript_options = CalendarDateSelect.default_options.merge(options), {}
       image = options.delete(:image)
       callbacks = [:before_show, :before_close, :after_show, :after_close, :after_navigate]
-      for key in [:default_time, :time, :valid_date_check, :embedded, :buttons, :clear_button, :format, :year_range, :month_year, :popup, :hidden, :minute_interval, :popup_by, :close_on_click] + callbacks
+      for key in [:default_time, :time, :valid_date_check, :embedded, :buttons, :clear_button, :format, :year_range, :month_year, :popup, :hidden, :minute_interval, :popup_by, :close_on_click, :content_container, :calendar_parent] + callbacks
         javascript_options[key] = options.delete(key) if options.has_key?(key)
       end
 

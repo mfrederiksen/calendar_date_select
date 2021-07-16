@@ -292,6 +292,8 @@
 &lt%= calendar_date_select_tag "p_close_on_click", nil, :time => true, :close_on_click => true %>
 </pre>
 
+<hr />
+
 <h2>Target Parent Element</h2>
 <p>
     <input type="text" name="p_target_parent" id="p_target_parent" /> <img onclick="new CalendarDateSelect( this.parentElement);" style="border:0px; cursor:pointer;" src="../app/assets/images/calendar_date_select/calendar.gif" />
@@ -299,5 +301,31 @@
 <pre>
 N/A: Supported by calendar_date_select.js but not calendar_date_select_tag
 </pre>
+
+<hr />
+
+<h2>Inside a container (Calendar should always appear above)</h2>
+<div id="calendar-container" style="border: 1px solid; height: 200px; overflow: scroll">
+    <p style="margin-top: 150px;">
+        <input type="text" name="p_container" id="p_container" /> <img onclick="new CalendarDateSelect(this.previousElementSibling, {content_container: document.getElementById('calendar-container')});" style="border:0px; cursor:pointer;" src="../app/assets/images/calendar_date_select/calendar.gif" />
+    </p>
+</div>
+<pre>
+&lt%= calendar_date_select_tag "p_container", nil, :content_container => "document.getElementById('calendar-container')"  %>
+</pre>
+
+<hr />
+
+<h2>Target a different parent</h2>
+<div id="calendar-parent" style="border: 1px solid; padding: 100px;">
+    <p>
+        <input type="text" name="p_parent" id="p_parent" /><img onclick="new CalendarDateSelect(this.previousElementSibling, {calendar_parent: document.getElementById('calendar-parent')});" style="border:0px; cursor:pointer;" src="../app/assets/images/calendar_date_select/calendar.gif" />
+    </p>
+</div>
+<pre>
+&lt%= calendar_date_select_tag "p_parent", nil, :calendar_parent => "document.getElementById('calendar-parent')"  %>
+</pre>
+
+<div style="height: 500px;"></div>
 </body>
 </html>

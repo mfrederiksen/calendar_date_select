@@ -412,6 +412,8 @@
       this.last_click_at = 0;
       // initialize the date control
       this.options = objectsToMap({
+        content_container: null,
+        calendar_parent: null,
         embedded: false,
         popup: null,
         time: false,
@@ -439,7 +441,7 @@
       }, options || {});
       this.use_time = this.options.get("time");
       this.parseDate();
-      this.callback("before_show")
+      this.callback("before_show");
       this.initCalendarDiv();
       if (!this.options.get("embedded")) {
         this.positionCalendarDiv();
@@ -451,7 +453,7 @@
         document.addEventListener("mousedown", this.closeIfClickedOutListener);
         document.addEventListener("keydown", this.keyPressListener);
       }
-      this.callback("after_show")
+      this.callback("after_show");
     }
 
     newDate(...args) {
@@ -459,21 +461,27 @@
     }
 
     positionCalendarDiv() {
-      let c_height = getDimensions(this.calendar_div).height;
+      const c_height = getDimensions(this.calendar_div).height;
 
-      let e_dim = cumulativeOffset(this.options.get("popup_by"));
-      let e_top = e_dim.top;
-      let e_left = e_dim.left;
+      const e_dim = cumulativeOffset(this.options.get("popup_by"));
+      const e_top = e_dim.top;
+      const e_left = e_dim.left;
 
-      let e_height = getDimensions(this.options.get("popup_by")).height;
-      let e_bottom = e_top + e_height;
+      const e_height = getDimensions(this.options.get("popup_by")).height;
+      const e_bottom = e_top + e_height;
 
-      let scrollTop = windowScrollTop();
+      const contentContainer = this.options.get('content_container');
+      const w_top  = contentContainer ? contentContainer.scrollTop : windowScrollTop();
 
-      let above = ((e_bottom + c_height) > (scrollTop + windowHeight())) && (e_bottom - c_height > scrollTop);
+      const parent = this.options.get('calendar_parent');
+      const parent_top = parent ? cumulativeOffset(parent) : 0;
 
-      let left_px = e_left.toString() + "px";
-      let top_px = (above ? (e_top - c_height) : (e_top + e_height)).toString() + "px";
+      const thereIsNoSpaceBelowInput = (parent_top + e_bottom + c_height) > (w_top + windowHeight());
+      const thereIsSpaceAboveInput = (parent_top + e_bottom - c_height) > w_top;
+      const above = thereIsNoSpaceBelowInput && thereIsSpaceAboveInput;
+
+      const left_px = e_left.toString() + "px";
+      const top_px = (above ? (e_top - c_height) : (e_top + e_height)).toString() + "px";
 
       this.calendar_div.style.left = left_px;
       this.calendar_div.style.top = top_px;
