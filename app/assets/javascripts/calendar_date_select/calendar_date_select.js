@@ -484,11 +484,9 @@
       const e_height = getDimensions(this.options.get("popup_by")).height;
       const e_bottom = e_top + e_height;
 
-      const contentContainer = this.options.get('content_container');
-      const w_top  = contentContainer ? contentContainer.scrollTop : windowScrollTop();
+      const w_top  = this.options.has('content_container') ? this.options.get('content_container').scrollTop : windowScrollTop();
 
-      const parent = this.options.get('calendar_parent');
-      const parent_top = parent ? cumulativeOffset(parent).top : 0;
+      const parent_top = this.options.has('calendar_parent') ? cumulativeOffset(this.options.get('calendar_parent')).top : 0;
 
       const thereIsNoSpaceBelowInput = (parent_top + e_bottom + c_height) > (w_top + windowHeight());
       const thereIsSpaceAboveInput = (parent_top + e_bottom - c_height) > w_top;
@@ -506,10 +504,10 @@
       let parent, style;
       if (this.options.get("embedded")) {
         parent = this.target_element.parentNode;
-        style = {}
+        style = {};
       } else {
-        parent = document.body
-        style = {position: "absolute", visibility: "hidden", left: 0, top: 0}
+        parent = this.options.has('calendar_parent') ? this.options.get('calendar_parent') : document.body;
+        style = {position: "absolute", visibility: "hidden", left: 0, top: 0};
       }
       this.calendar_div = createElement(parent, 'div', {className: "calendar_date_select"}, style);
 
