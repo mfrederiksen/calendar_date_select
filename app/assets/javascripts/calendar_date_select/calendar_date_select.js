@@ -128,14 +128,36 @@
    * @returns {{top: number, left: number}}
    */
   function cumulativeOffset(element) {
-    if (!element) return {left: 0, top: 0};
-    let parentOffset = cumulativeOffset(element.offsetParent);
-    return temporarilyDisplayElement(element, e => {
-      return {
-        left: (e.offsetLeft || 0) + parentOffset.left,
-        top: (e.offsetTop || 0) + parentOffset.top
-      };
-    });
+    let top = 0;
+    let left = 0;
+    do {
+      top += element.offsetTop  || 0;
+      left += element.offsetLeft || 0;
+      if (element.offsetParent === document.body)
+        if (element.style.position === 'absolute') break;
+      element = element.offsetParent;
+    } while (element);
+    return { left, top };
+  }
+
+  /**
+   * Calculates an elements cumulative offset relative to its closest positioned ancestor.
+   * @param {Element} element Target element
+   * @returns {{top: number, left: number}}
+   */
+  function positionedOffset(element) {
+    let top = 0
+    let left = 0;
+    do {
+      top += element.offsetTop || 0;
+      left += element.offsetLeft || 0;
+      element = element.offsetParent;
+      if (element) {
+        if (element.tagName.toUpperCase() === 'BODY') break;
+        if (element.style.position !== 'static') break;
+      }
+    } while (element);
+    return { left, top };
   }
 
   /**
@@ -158,11 +180,7 @@
    * @returns {number}
    */
   function windowHeight() {
-    return [
-      window.innerHeight ? window.innerHeight : null,
-      document.documentElement ? document.documentElement.clientHeight : null,
-      document.body ? document.body.clientHeight : null
-    ].find(x => x !== null && x > 0) || 0;
+    return Math.max(window.innerHeight, document.documentElement.clientHeight, document.body.clientHeight);
   }
 
   /**
@@ -171,11 +189,7 @@
    * @returns {number}
    */
   function windowScrollTop() {
-    return [
-      window.pageYOffset ? window.pageYOffset : null,
-      document.documentElement ? document.documentElement.scrollTop : null,
-      document.body ? document.body.scrollTop : null
-    ].find(x => x !== null && x > 0) || 0;
+    return Math.max(window.pageYOffset, document.documentElement.scrollTop, document.body.scrollTop);
   }
 
   /**
@@ -463,7 +477,7 @@
     positionCalendarDiv() {
       const c_height = getDimensions(this.calendar_div).height;
 
-      const e_dim = cumulativeOffset(this.options.get("popup_by"));
+      const e_dim = positionedOffset(this.options.get("popup_by"));
       const e_top = e_dim.top;
       const e_left = e_dim.left;
 
@@ -474,7 +488,7 @@
       const w_top  = contentContainer ? contentContainer.scrollTop : windowScrollTop();
 
       const parent = this.options.get('calendar_parent');
-      const parent_top = parent ? cumulativeOffset(parent) : 0;
+      const parent_top = parent ? cumulativeOffset(parent).top : 0;
 
       const thereIsNoSpaceBelowInput = (parent_top + e_bottom + c_height) > (w_top + windowHeight());
       const thereIsSpaceAboveInput = (parent_top + e_bottom - c_height) > w_top;

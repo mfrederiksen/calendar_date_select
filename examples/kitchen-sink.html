@@ -262,18 +262,6 @@
 
 <hr />
 
-<h2>Popup By (display: none)</h2>
-<p>
-    <span id="p_popup_by_target_2" style="margin-left: 500px; display: none;">OVER HERE</span><br />
-    <input type="text" name="p_popup_by_2" id="p_popup_by_2" /> <img onclick="new CalendarDateSelect( this.previousElementSibling, {popup_by:document.getElementById(&#39;p_popup_by_target_2&#39;), year_range:10} );" style="border:0px; cursor:pointer;" src="../app/assets/images/calendar_date_select/calendar.gif" />
-</p>
-<pre>
-&ltspan id="p_popup_by_target_2" style="margin-left: 500px; display: none">OVER HERE&lt/span>
-&lt%= calendar_date_select_tag "p_popup_by_2", nil, :popup_by => "document.getElementById('p_popup_by_target_2')" %>
-</pre>
-
-<hr />
-
 <h2>Minute Interval</h2>
 <p>
     <input type="text" name="p_min_interval" id="p_min_interval" /> <img onclick="new CalendarDateSelect( this.previousElementSibling, {minute_interval:1, time:true, year_range:10} );" style="border:0px; cursor:pointer;" src="../app/assets/images/calendar_date_select/calendar.gif" />
@@ -304,7 +292,7 @@ N/A: Supported by calendar_date_select.js but not calendar_date_select_tag
 
 <hr />
 
-<h2>Inside a container (Calendar should always appear above)</h2>
+<h2>Inside a container</h2>
 <div id="calendar-container" style="border: 1px solid; height: 200px; overflow: scroll">
     <p style="margin-top: 150px;">
         <input type="text" name="p_container" id="p_container" /> <img onclick="new CalendarDateSelect(this.previousElementSibling, {content_container: document.getElementById('calendar-container')});" style="border:0px; cursor:pointer;" src="../app/assets/images/calendar_date_select/calendar.gif" />
