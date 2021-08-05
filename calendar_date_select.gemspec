@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'calendar_date_select/version'
 
 Gem::Specification.new "calendar_date_select", CalendarDateSelect::VERSION do |spec|
-  spec.authors       = ["Shih-gian Lee", "Enrique Garcia Cota (kikito)", "Tim Charper", "Lars E. Hoeg", "Marc-André Lafortune"]
+  spec.authors       = ["Shih-gian Lee", "Enrique Garcia Cota (kikito)", "Tim Charper", "Lars E. Hoeg", "Marc-André Lafortune", "Mark Frederiksen"]
   spec.email         = ["github@marc-andre.ca"]
   spec.description   = "Calendar date picker for rails"
   spec.summary       = "Calendar date picker for rails"

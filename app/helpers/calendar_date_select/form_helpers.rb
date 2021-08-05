@@ -165,7 +165,7 @@ module CalendarDateSelect::FormHelpers
       options, javascript_options = CalendarDateSelect.default_options.merge(options), {}
       image = options.delete(:image)
       callbacks = [:before_show, :before_close, :after_show, :after_close, :after_navigate]
-      for key in [:default_time, :time, :valid_date_check, :embedded, :buttons, :clear_button, :format, :year_range, :month_year, :popup, :hidden, :minute_interval] + callbacks
+      for key in [:default_time, :time, :valid_date_check, :embedded, :buttons, :clear_button, :format, :year_range, :month_year, :popup, :hidden, :minute_interval, :popup_by, :close_on_click, :content_container, :calendar_parent] + callbacks
         javascript_options[key] = options.delete(key) if options.has_key?(key)
       end
 
@@ -214,11 +214,11 @@ module CalendarDateSelect::FormHelpers
         uniq_id = "cds_placeholder_#{(rand*100000).to_i}"
         # we need to be able to locate the target input element, so lets stick an invisible span tag here we can easily locate
         out << content_tag(:span, nil, :style => "display: none; position: absolute;", :id => uniq_id)
-        out << javascript_tag("new CalendarDateSelect( $('#{uniq_id}').previous(), #{options_for_javascript(javascript_options)} ); ")
+        out << javascript_tag("new CalendarDateSelect( document.getElementById('#{uniq_id}').previousElementSibling, #{options_for_javascript(javascript_options)} ); ")
       else
         out << " "
         out << image_tag(image,
-            :onclick => "new CalendarDateSelect( $(this).previous(), #{options_for_javascript(javascript_options)} );",
+            :onclick => "new CalendarDateSelect( this.previousElementSibling, #{options_for_javascript(javascript_options)} );",
             :style => 'border:0px; cursor:pointer;',
 			:class=>'calendar_date_select_popup_icon')
       end

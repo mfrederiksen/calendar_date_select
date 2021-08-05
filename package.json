@@ -1,0 +1,26 @@
+{
+  "name": "calendar_date_select",
+  "version": "3.0.4",
+  "description": "Calendar date picker for rails",
+  "main": "index.js",
+  "directories": {
+    "lib": "app"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mfrederiksen/calendar_date_select.git"
+  },
+  "author": "Shih-gian Lee, Enrique Garcia Cota (kikito)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mfrederiksen/calendar_date_select/issues"
+  },
+  "homepage": "https://github.com/mfrederiksen/calendar_date_select#readme",
+  "devDependencies": {
+    "jest": "^27.0.6",
+    "jquery": "^3.6.0"
+  }
+}

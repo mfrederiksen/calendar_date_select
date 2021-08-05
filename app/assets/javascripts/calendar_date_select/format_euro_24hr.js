@@ -1,7 +1,15 @@
 // Formats date and time as "01 January 2000 17:00"
-Date.prototype.toFormattedString = function(include_time)
-{
-   str = Date.padded2(this.getDate()) + " " + Date.months[this.getMonth()] + " " + this.getFullYear();
-   if (include_time) { str += " " + this.getHours() + ":" + this.getPaddedMinutes() }
-   return str;
+class Euro24Date extends CDSDate {
+
+   constructor(...args) {
+      super(...args);
+   }
+
+   toFormattedString(include_time) {
+      let str = Euro24Date.padded2(this.getDate()) + " " + this.getCurrentMonthName() + " " + this.getFullYear();
+      if (include_time) { str += " " + this.getHours() + ":" + this.getPaddedMinutes() }
+      return str;
+   }
 }
+
+CalendarDateSelect.DATE_CLASS = Euro24Date;

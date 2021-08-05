@@ -1,3 +1,16 @@
+== Version 3.0.4
+
+WARNING: The date formatting and translation system has been completely rewritten to break the dependency
+against modifying the prototype chain of core js objects.  If you have written custom formatters or locales,
+they will need to be updated.
+
+* Removed dependency on prototype.js.  calendar_date_select.js is now dependency free.
+* Migrated js syntax to ES6
+* Migrated js tests to jest/jQuery
+* Added a kitchen sink examples file (ported from calendar_date_select_demo)
+* Added the content_container and calendar_parent options for fine more control over where the popup appears
+* Formatting of the Hours drop down, can be customized via overriding CDSDate.getHourForDropdown()
+
 == Version 2.0.0
 
 Engine for Rails 3.1+
