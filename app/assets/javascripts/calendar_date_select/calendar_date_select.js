@@ -251,8 +251,6 @@
    * Date handling functions for CDS
    */
   class CDSDate extends Date {
-    static #ONE_DAY = 24 * 60 * 60 * 1000;
-
     /**
      * @param {any} args passed to Date constructor
      */
@@ -328,7 +326,7 @@
      * @returns {number}
      */
     daysDistance(compare_date) {
-      return Math.round((compare_date - this) / CDSDate.#ONE_DAY);
+      return Math.round((compare_date - this) / CDSDate.ONE_DAY);
     }
 
     /**
@@ -360,6 +358,7 @@
       return this.getAMPMHour()+ " " + this.getAMPM();
     }
   }
+  CDSDate.ONE_DAY = 24 * 60 * 60 * 1000;
 
   class SelectBox {
     constructor(parent_element, values, html_options) {
@@ -398,20 +397,6 @@
   }
 
   class CalendarDateSelect {
-
-    static DATE_CLASS = CDSDate;
-    static LOCALE_PROVIDER = new CDSLocaleProvider(
-      "S M T W T F S".split(' '),
-      "January February March April May June July August September October November December".split(' '),
-      0,
-      {
-        OK: "OK",
-        Now: "Now",
-        Today: "Today",
-        Clear: "Clear"
-      }
-    );
-
     constructor(target_element, options) {
       this.locale = CalendarDateSelect.LOCALE_PROVIDER;
 
@@ -1014,6 +999,18 @@
       }
     }
   }
+  CalendarDateSelect.DATE_CLASS = CDSDate;
+  CalendarDateSelect.LOCALE_PROVIDER = new CDSLocaleProvider(
+      "S M T W T F S".split(' '),
+      "January February March April May June July August September October November December".split(' '),
+      0,
+      {
+        OK: "OK",
+        Now: "Now",
+        Today: "Today",
+        Clear: "Clear"
+      }
+  );
 
   // Expose for unit tests
   exportTo.CDSUtils = { objectsToMap, createElement, range, removeChildNodes, isDescendantOf, getDimensions, windowHeight, floor_to_interval, findFirstChildElementByTagName };
