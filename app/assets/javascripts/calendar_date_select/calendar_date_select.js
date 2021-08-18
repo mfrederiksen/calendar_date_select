@@ -597,7 +597,6 @@
       const buttons_div = this.buttons_div;
       if (this.options.get("time")) {
         let blank_time = this.options.get("time") === "mixed" ? [[" - ", ""]] : [];
-        createElement(buttons_div, "span", {innerHTML: "@", className: "at_sign"});
 
         let t = this.newDate();
         this.hour_select = new SelectBox(
