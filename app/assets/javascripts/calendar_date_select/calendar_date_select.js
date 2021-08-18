@@ -760,7 +760,7 @@
         this.year_select.setValue(y);
 
       } else {
-        this.month_year_label.innerHTML = this.date.getCurrentMonthName() + " " + y.toString();
+        this.month_year_label.innerHTML = this.locale.getMonthName(this.date.getMonth()) + " " + y.toString();
       }
     }
 
