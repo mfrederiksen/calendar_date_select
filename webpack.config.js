@@ -6,10 +6,10 @@ const config = {
     mode: 'development',
     devtool: false,
     entry: {
-        calendar_date_select: './app/assets/javascripts/calendar_date_select/calendar_date_select.js'
+        calendar_date_select: './src/calendar_date_select.js'
     },
     output: {
-        filename: '[name].patched.js',
+        filename: '[name].js',
         path: path.resolve(__dirname, 'app/assets/javascripts/calendar_date_select'),
     },
     plugins: [
