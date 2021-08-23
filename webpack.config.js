@@ -3,7 +3,7 @@
 const path = require('path');
 
 const config = {
-    mode: 'development',
+    mode: 'development', // We always use `development` mode here to make sure the file does not get minified, so that minification can happen downstream.
     devtool: false,
     entry: {
         calendar_date_select: './src/calendar_date_select.js'
