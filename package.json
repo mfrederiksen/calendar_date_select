@@ -1,13 +1,15 @@
 {
   "name": "calendar_date_select",
-  "version": "4.2.0",
+  "version": "4.2.1",
   "description": "Calendar date picker for rails",
   "main": "index.js",
   "directories": {
     "lib": "app"
   },
   "scripts": {
-    "test": "jest"
+    "build": "webpack --mode=development",
+    "test": "jest",
+    "watch": "webpack --watch"
   },
   "repository": {
     "type": "git",
@@ -20,7 +22,13 @@
   },
   "homepage": "https://github.com/mfrederiksen/calendar_date_select#readme",
   "devDependencies": {
+    "@babel/core": "^7.15.0",
+    "@babel/preset-env": "^7.15.0",
+    "@webpack-cli/generators": "^2.3.0",
+    "babel-loader": "^8.2.2",
     "jest": "^27.0.6",
-    "jquery": "^3.6.0"
+    "jquery": "^3.6.0",
+    "webpack": "^5.51.1",
+    "webpack-cli": "^4.8.0"
   }
 }
