@@ -1,4 +1,4 @@
-== Version 4.2.0
+== Version 4.2.1
 
 WARNING: The date formatting and translation system has been completely rewritten to break the dependency
 against modifying the prototype chain of core js objects.  If you have written custom formatters or locales,

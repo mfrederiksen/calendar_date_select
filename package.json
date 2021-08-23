@@ -1,15 +1,13 @@
 {
   "name": "calendar_date_select",
-  "version": "4.2.0",
+  "version": "4.2.1",
   "description": "Calendar date picker for rails",
   "main": "index.js",
   "directories": {
     "lib": "app"
   },
   "scripts": {
-    "build": "webpack --mode=production --node-env=production",
-    "build:dev": "webpack --mode=development",
-    "build:prod": "webpack --mode=production --node-env=production",
+    "build": "webpack --mode=development",
     "test": "jest",
     "watch": "webpack --watch"
   },
